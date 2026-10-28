@@ -22,6 +22,10 @@
     </div>
   </div>
   <div class="header-right">
+    <span class="team-chip" id="header-team-chip" hidden>
+      <span class="team-chip-label">TEAM</span>
+      <span class="team-chip-name" id="header-team-name"></span>
+    </span>
     <div class="timer-chip" id="timer-chip" style="display:none">
       <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
       <span id="timer-text">00:00:00</span>
@@ -46,6 +50,12 @@
       <p class="entry-subheading">Puzzle Adventure</p>
  
       <div class="entry-card">
+        <div class="team-name-field">
+          <label class="team-name-label" for="team-name">Team Name</label>
+          <input class="team-name-input" id="team-name" type="text" maxlength="40"
+            placeholder="Enter your team name" autocomplete="organization" required>
+          <p class="team-name-error" id="team-name-error" aria-live="polite"></p>
+        </div>
         <ul class="rules">
           <li><span>🗺️</span> Follow the road — <b>6 nodes</b>, <b>3 questions</b> each.</li>
           <li><span>🔑</span> Every node you finish gives you <b>1 secret letter</b>.</li>
@@ -150,6 +160,7 @@
       </div>
  
       <div class="result-body" id="res-body" style="display:none">
+        <p class="evaluation-team-name">Team: <span id="res-team-name"></span></p>
         <p class="victory-sub">Here is how you did</p>
         <div class="score-ring">
           <div class="score-num" id="res-score">0 / 18</div>
@@ -180,6 +191,7 @@
       <div class="review-topbar">
         <button class="btn-ghost" id="btn-review-back">← Result</button>
         <h2 class="review-heading">📋 Answer Review</h2>
+        <span class="review-team-name" id="review-team-name"></span>
         <span class="review-badge" id="review-badge">—</span>
       </div>
       <div class="review-body" id="review-list"></div>

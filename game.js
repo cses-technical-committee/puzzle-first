@@ -20,6 +20,7 @@
   const LEVELS = window.PUZZLE_LEVELS || [];
   const WORD = String(CFG.secretWord || '').toUpperCase().replace(/[^A-Z]/g, '');
   const KEY = CFG.storageKey || 'technova_puzzle_set1';
+  const TEAM_KEY = `${KEY}_team_name:${window.location.pathname}`;
   const N = LEVELS.length;
   const TOTAL_Q = LEVELS.reduce((s, l) => s + l.questions.length, 0);
   const ABC = 'ABCD';
@@ -62,6 +63,11 @@
     };
   }
   function save() { try { localStorage.setItem(KEY, JSON.stringify(state)); } catch (e) {} }
+  function updateTeamName(name) {
+    const hasName = Boolean(name);
+    $('header-team-name').textContent = name;
+    $('header-team-chip').hidden = !hasName;
+  }
  
   // 6 letters ko randomly nodes mein baant do (word ke original order se alag)
   function makeLetterMap() {
@@ -541,6 +547,7 @@
     show('result');
     const { score, max } = evaluate();
     const elapsed = Math.max(0, Math.floor(((state.endTime || Date.now()) - state.startTime) / 1000));
+    $('res-team-name').textContent = state.teamName;
     $('res-time').textContent = fmt(elapsed);
     $('res-word').textContent = WORD;
     $('btn-review').style.display = CFG.showReview === false ? 'none' : '';
@@ -563,6 +570,7 @@
  
   function renderReview() {
     const { correct, wrong, score, max } = evaluate();
+    $('review-team-name').textContent = `Team: ${state.teamName}`;
     $('review-badge').textContent = `${score} / ${max} marks · ✅ ${correct} · ❌ ${wrong}`;
     let h = '';
     LEVELS.forEach((lv, i) => {
@@ -595,11 +603,21 @@
  
   function startGame() {
     if (configProblem()) return;
+    const teamName = $('team-name').value.trim();
+    if (!teamName) {
+      $('team-name-error').textContent = 'Please enter your team name to continue.';
+      $('team-name').focus();
+      return;
+    }
+    $('team-name-error').textContent = '';
     state = blank();
+    state.teamName = teamName;
     state.started = true;
     state.startTime = Date.now();
     state.letters = makeLetterMap();
     save();
+    try { localStorage.setItem(TEAM_KEY, teamName); } catch (error) { console.error('Unable to save team name.', error); }
+    updateTeamName(teamName);
     snd('playStartMission');
     startTimer();
     showMap();
@@ -611,12 +629,18 @@
     if (pass !== (CFG.organizerPasscode || 'TECHNOVA2026')) { alert('Wrong passcode.'); return; }
     if (confirm('Reset this device and start from scratch?')) {
       try { localStorage.removeItem(KEY); } catch (e) {}
+      try { localStorage.removeItem(TEAM_KEY); } catch (error) { console.error('Unable to clear saved team name.', error); }
       location.reload();
     }
   }
  
   function bind() {
     $('btn-start').addEventListener('click', startGame);
+    $('team-name').addEventListener('input', () => {
+      const name = $('team-name').value.trim();
+      $('team-name-error').textContent = '';
+      updateTeamName(name);
+    });
     $('btn-sound').addEventListener('click', () => {
       try { const on = window.soundManager?.toggleSound(); $('btn-sound').classList.toggle('muted', !on); } catch (e) {}
     });
@@ -652,6 +676,10 @@
   function boot() {
     state = blank();
     try { localStorage.removeItem(KEY); } catch (e) {}
+    let savedTeamName = '';
+    try { savedTeamName = localStorage.getItem(TEAM_KEY) || ''; } catch (error) { console.error('Unable to load saved team name.', error); }
+    $('team-name').value = savedTeamName;
+    updateTeamName(savedTeamName);
     bind();
     buildKeys();
  
